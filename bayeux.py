@@ -1,5 +1,8 @@
 from twisted.web import resource
 from json import JSONEncoder, JSONDecoder
+from twisted.internet import reactor, defer
+
+import twisted.web.server
 import uuid
 import message
 import request
@@ -36,15 +39,20 @@ class Handler():
     def __init__(self, request):
         self.request = request
 
-    def process(self):
+    def process(self, r):
         if (self.request.channel == '/meta/handshake'):
             res = response.HandshakeResponse()
+            res.id = self.request.id
+            r.write(res.toJSON())
+            r.finish()
         elif (self.request.channel == '/meta/connect'):
             res = response.ConnectResponse(self.request.clientId)
+            res.id = self.request.id
         else:
             res = response.Response(self.request.channel)
-
-        res.id = self.request.id
+            res.id = self.request.id
+            r.write(res.toJSON())
+            r.finish()
 
         if (hasattr(self.request, 'clientId')):
             res.clientId = self.request.clientId
@@ -54,12 +62,15 @@ class Handler():
 class Lumen(resource.Resource):
     def render(self, request):
         content = request.content.read()
+
         req = RequestParser.parse(content)
-        res = Handler(req).process()
+        res = Handler(req).process(request)
+
         request.setHeader('Content-type', 'text/json')
         print " => " + req.toJSON()
         print " <= " + res.toJSON()
-        return res.toJSON()
+
+        return twisted.web.server.NOT_DONE_YET
 
 class Bayeux(resource.Resource):
     def __init__(self):
