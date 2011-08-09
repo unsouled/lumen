@@ -19,10 +19,11 @@ class HandshakeRequest(Request):
 					}
 				]
 
-class ConnectRequest():
+class ConnectRequest(Request):
 	def __init__(self, clientId):
 		Request.__init__(self, '/meta/connect')
 		self.clientId = clientId
+		self.connectionType = 'long-polling'
 
 	def toArray(self):
 		return [

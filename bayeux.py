@@ -46,21 +46,18 @@ class Handler():
         res.id = self.request.id
 
         if (hasattr(self.request, 'clientId')):
-            print 'has clientId'
             res.clientId = self.request.clientId
 
         return res
 
 class Lumen(resource.Resource):
     def render(self, request):
-        print 'request received'
         content = request.content.read()
-        print content
         req = RequestParser.parse(content)
         res = Handler(req).process()
         request.setHeader('Content-type', 'text/json')
-        print req.toJSON()
-        print res.toJSON()
+        print " => " + req.toJSON()
+        print " <= " + res.toJSON()
         return res.toJSON()
 
 class Bayeux(resource.Resource):
