@@ -71,7 +71,7 @@ class HandshakeResponse(Response):
         self.advice = { 'reconnect': 'retry' }
 
     def generateClientId(self):
-        return 'someGeneratedClientId'
+        return uuid.uuid4().urn[9:]
 
     def toArray(self):
         return [
