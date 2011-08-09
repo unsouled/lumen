@@ -134,8 +134,8 @@ class Bayeux(resource.Resource):
         resource.Resource.__init__ (self)
         self.putChild('lumen', Lumen())
 
-        def render_GET(self, request):
-            pass
+    def render_GET(self, request):
+        pass
 
 lumen = server.Site(Bayeux())
 reactor.listenTCP(8080, lumen)
