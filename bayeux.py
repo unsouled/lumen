@@ -16,7 +16,6 @@ class RequestParser():
 
         if (channel == '/meta/handshake'):
             req = request.HandshakeRequest()
-            req.id = data['id']
             req.supportedConnectionTypes = data['supportedConnectionTypes']
         elif (channel == '/meta/connect'):
             req = request.ConnectRequest(data['clientId'])
@@ -28,6 +27,8 @@ class RequestParser():
             req = request.UnsubscribeRequest()
         else:
             req = request.PublishRequest(channel)
+
+        req.id = data['id']
 
         return req
 

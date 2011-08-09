@@ -52,6 +52,7 @@ class ConnectResponse(Response):
 	def toArray(self):
 		return [
 			{
+				"id": self.id,
 				"channel": self.channel,
 				"successful": self.successful,
 				"error": self.error,

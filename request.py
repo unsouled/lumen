@@ -28,6 +28,7 @@ class ConnectRequest(Request):
 	def toArray(self):
 		return [
 			{
+                "id": self.id,
 				"channel": self.channel,
 				"clientId": self.clientId,
 				"connectionType": self.connectionType
