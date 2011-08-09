@@ -1,8 +1,16 @@
 from message import Message
 
 class Response(Message):
-	def __init__(self, channel):
-		Message.__init__(self, channel)
+    def __init__(self, channel):
+        Message.__init__(self, channel)
+
+    def toArray(self):
+        return [
+                {
+                    "id": self.id,
+                    "channel": self.channel,
+                    }
+                ]
 
 class HandshakeResponse(Response):
 	def __init__(self):
@@ -19,6 +27,7 @@ class HandshakeResponse(Response):
 	def toArray(self):
 		return [
 				{
+					"id": self.id,
 					"channel": self.channel,
 					"version": self.version,
 					"minimumVersion": self.minimumVersion,

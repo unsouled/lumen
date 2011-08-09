@@ -11,6 +11,7 @@ class HandshakeRequest(Request):
 	def toArray(self):
 		return [
 				{
+                    "id": self.id,
 					"channel": self.channel,
 					"version": self.version,
 					"minimumVersion": self.minimumVersion,
@@ -71,6 +72,12 @@ class UnsubscribeRequest(Request):
 			]
 
 class PublishRequest(Request):
-	def __init__(self, channel):
-		Request.__init__(self, channel)
-	
+    def __init__(self, channel):
+        Request.__init__(self, channel)
+    def toArray(self):
+        return [
+                {
+                    "channel": self.channel,
+                    "clientId": self.clientId,
+                    }
+                ]
