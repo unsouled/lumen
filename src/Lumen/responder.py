@@ -5,6 +5,8 @@ class Responder():
     def __init__(self, clientId):
         self.clientId = clientId
 
+    # TODO:
+    # Deferred should be replaced by twisted event.
     def addRequest(self, request):
         self.handler = Deferred()
         self.handler.addCallback(self.handleRequest)
