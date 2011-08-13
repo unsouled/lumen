@@ -29,11 +29,10 @@ class HandshakeResponse(Response):
                   "advice": self.advice }]
 
 class ConnectResponse(Response):
-    def __init__(self, clientId):
+    def __init__(self):
         Response.__init__(self, '/meta/connect')
         self.successful = True
         self.error = ''
-        self.clientId = clientId
         self.timestamp =  '12:00:00 1970'
         self.advice =  { "reconnect": "retry" }
 
@@ -76,4 +75,3 @@ class UnsubscribeResponse(Response):
                   "subscription": self.subscription,
                   "successful": self.successful,
                   "error": self.error }]
-

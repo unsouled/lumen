@@ -1,7 +1,6 @@
 from twisted.web import resource
 from twisted.internet import reactor
 import twisted.web.server
-import uuid
 
 from request import RequestFactory
 from responder import Responder
@@ -16,8 +15,9 @@ class Lumen(resource.Resource):
 
         request = RequestFactory.create(httpRequest)
         if request.channel == '/meta/handshake':
-            clientId = self.generateClientId()
-            self.responders[clientId] = Responder(clientId)
+            responder = Responder()
+            clientId = responder.clientId
+            self.responders[clientId] = responder
         else:
             clientId = request.clientId
         self.responders[clientId].addRequest(request)
