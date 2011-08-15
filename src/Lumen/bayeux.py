@@ -24,9 +24,6 @@ class Lumen(resource.Resource):
 
         return twisted.web.server.NOT_DONE_YET
 
-    def generateClientId(self):
-        return uuid.uuid4().urn[9:]
-
 class Bayeux(resource.Resource):
     def __init__(self):
         resource.Resource.__init__ (self)
