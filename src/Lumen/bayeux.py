@@ -6,12 +6,12 @@ from request import RequestFactory
 from responder import Responder
 
 import message
+import client
 
 class Bayeux(resource.Resource):
     class Server(resource.Resource):
         def __init__(self):
             resource.Resource.__init__(self)
-            self.responders = {}
 
         def render(self, httpRequest):
             print 'http request received'
@@ -19,7 +19,8 @@ class Bayeux(resource.Resource):
             httpRequest.setHeader('content-type', 'text/json')
 
             msg = message.Message(httpRequest)
-            msg.process()
+            c = client.findByMessage(msg)
+            c.handleMessage(msg)
 
             return twisted.web.server.NOT_DONE_YET
 

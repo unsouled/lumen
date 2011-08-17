@@ -9,31 +9,29 @@ class Request():
         self.attributes['minimumVersion'] ='1.0beta'
 
     def process(self):
-        ch = channel.get(self.attributes['channel'])
-        return ch.publish(self)
+        if self.attributes['channel'].startswith('/meta/'):
+            ch = channel.get(self.attributes['channel'])
+            ret = ch.publish(self)
+        else:
+            chs = channel.expand(self.attributes['channel'])
+            for ch in chs:
+                ret = channel.get(ch).publish(self)
+        ret['channel'] = self.attributes['channel']
+        return ret
 
 class Message():
     def __init__(self, httpRequest):
         content = httpRequest.content.read()
         self.httpRequest = httpRequest
         self.content = JSONDecoder().decode(content)
-
-        self.content.reverse() # FIXME: work around!
-
         print self.content
-        self.requests = [ Request(data) for data in self.content]
 
-    def respond(self, results):
+        self.requests = [Request(data) for data in self.content]
+
+    def handle(self):
         responses = []
+        while self.requests:
+            request = self.requests.pop(0)
+            responses.append (request.process())
 
-        for result in results:
-            status, ret = result
-            responses += ret
-
-        self.httpRequest.write(JSONEncoder().encode(responses))
-        self.httpRequest.finish()
-
-    def process(self):
-        responses = [ req.process() for req in self.requests ]
-        self.responses = defer.DeferredList(responses)
-        self.responses.addCallback(self.respond)
+        return responses
