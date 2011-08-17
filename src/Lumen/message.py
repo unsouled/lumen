@@ -1,5 +1,4 @@
-from twisted.internet import reactor, defer
-from json import JSONEncoder, JSONDecoder
+from json import JSONDecoder
 import channel
 
 class Request():

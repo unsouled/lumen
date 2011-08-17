@@ -1,5 +1,5 @@
 import sys
-from twisted.web import server, resource
+from twisted.web import server
 from twisted.internet import reactor
 import bayeux
 

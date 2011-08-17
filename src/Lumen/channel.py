@@ -1,9 +1,5 @@
-from twisted.internet import reactor, defer
-from json import JSONEncoder, JSONDecoder
-
+from twisted.internet import reactor
 import client
-import connection
-import uuid
 
 class Channel():
     def __init__(self, channelId):
@@ -11,12 +7,7 @@ class Channel():
         self.subscribers = set()
 
     def publish(self, msg):
-        data = [{ 'channel': msg.attributes['channel'],
-                  'data': msg.attributes['data'],
-                  'id': msg.attributes['id'] }]
-
-        for subscriber in self.subscribers:
-            subscriber.publish(data)
+        reactor.callLater(0.01, self._doPublish, msg)
 
         response =  { 'channel': msg.attributes['channel'],
                       'successful': True,
@@ -24,11 +15,19 @@ class Channel():
 
         return response
 
-    def subscribe(self, client):
-        self.subscribers.add(client)
+    def _doPublish(self, msg):
+        data = [{ 'channel': msg.attributes['channel'],
+                  'data': msg.attributes['data'],
+                  'id': msg.attributes['id'] }]
 
-    def unsubscribe(self, client):
-        self.subscribers.remove(client)
+        for subscriber in self.subscribers:
+            subscriber.publish(data)
+
+    def subscribe(self, c):
+        self.subscribers.add(c)
+
+    def unsubscribe(self, c):
+        self.subscribers.remove(c)
 
 class Meta(Channel):
     def __init__(self, channelId):
@@ -75,17 +74,20 @@ class Subscribe(Meta):
         Meta.__init__(self, '/meta/subscribe')
 
     def publish(self, msg):
-        clientId = msg.attributes['clientId']
+        reactor.callLater(0.01, self._doPublish, msg)
+
         response = { 'id': msg.attributes['id'],
                      'channel': msg.attributes['channel'],
                      'successful': True,
                      'error': '',
-                     'clientId': clientId,
+                     'clientId': msg.attributes['clientId'],
                      'timestamp': '12:00:00 1970',
                      'advice': { 'reconnect': 'retry' } }
-
-        subscribe(msg.attributes['subscription'], client.findById(clientId))
         return response
+
+    def _doPublish(self, msg):
+        clientId = msg.attributes['clientId']
+        subscribe(msg.attributes['subscription'], client.findById(clientId))
 
 class Unsubscribe(Meta):
     def __init__(self):
@@ -111,10 +113,10 @@ def expand(ch):
 
     return chset
 
-def subscribe(ch, client):
+def subscribe(ch, c):
     chset = expand(ch)
     for ch in chset:
-        get(ch).subscribe(client)
+        get(ch).subscribe(c)
 
 def get(channelId):
     try:

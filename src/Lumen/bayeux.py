@@ -1,10 +1,5 @@
 from twisted.web import resource
-from twisted.internet import reactor
 import twisted.web.server
-
-from request import RequestFactory
-from responder import Responder
-
 import message
 import client
 
