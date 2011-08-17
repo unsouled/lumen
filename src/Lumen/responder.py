@@ -1,4 +1,4 @@
-from twisted.internet.defer import Deferred
+from twisted.internet import reactor
 import response
 import uuid
 
@@ -91,12 +91,8 @@ class Responder():
     def __generateClientId(self):
         return uuid.uuid4().urn[9:]
 
-    # TODO:
-    # Deferred should be replaced by twisted event.
     def addRequest(self, request):
-        self.handler = Deferred()
-        self.handler.addCallback(self.__handleRequest)
-        self.handler.callback(request)
+        reactor.callLater(0.01, self.__handleRequest, request)
 
     def __handleRequest(self, request):
         if request.channel == '/meta/handshake':
