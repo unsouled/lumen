@@ -12,7 +12,7 @@ class Request():
         if not self.attributes['channel'].startswith('/meta/'):
             reactor.callLater(0.01, self._doPublish)
 
-        return channel.get(self.attributes['channel']).handle(self)
+        return channel.get(self.attributes['channel']).process(self)
 
     def _doPublish(self):
         data = [{ 'channel': self.attributes['channel'],

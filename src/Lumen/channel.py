@@ -5,7 +5,7 @@ class Channel():
         self.id = channelId
         self.subscribers = set()
 
-    def handle(self, msg):
+    def process(self, msg):
         return { 'channel': msg.attributes['channel'],
                  'successful': True,
                  'id': msg.attributes['id'] }
@@ -28,7 +28,7 @@ class Handshake(Meta):
     def __init__(self):
         Meta.__init__(self, '/meta/handshake')
 
-    def handle(self, msg):
+    def process(self, msg):
         return { 'id': msg.attributes['id'],
                  'channel': msg.attributes['channel'],
                  'version': msg.attributes['version'],
@@ -42,7 +42,7 @@ class Connect(Meta):
     def __init__(self):
         Meta.__init__(self, '/meta/connect')
 
-    def handle(self, msg):
+    def process(self, msg):
         return { 'id': msg.attributes['id'],
                  'channel': msg.attributes['channel'],
                  'successful': True,
@@ -58,7 +58,7 @@ class Subscribe(Meta):
     def __init__(self):
         Meta.__init__(self, '/meta/subscribe')
 
-    def handle(self, msg):
+    def process(self, msg):
         clientId = msg.attributes['clientId']
         subscribe(msg.attributes['subscription'], client.findById(clientId))
 
