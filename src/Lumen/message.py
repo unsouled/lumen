@@ -8,15 +8,20 @@ class Request():
         self.attributes['minimumVersion'] ='1.0beta'
 
     def process(self):
-        if self.attributes['channel'].startswith('/meta/'):
-            ch = channel.get(self.attributes['channel'])
-            ret = ch.publish(self)
-        else:
+        if not self.attributes['channel'].startswith('/meta/'):
+            data = [{ 'channel': self.attributes['channel'],
+                      'data': self.attributes['data'],
+                      'id': self.attributes['id'] }]
+
+            subscribers = set()
             chs = channel.expand(self.attributes['channel'])
             for ch in chs:
-                ret = channel.get(ch).publish(self)
-        ret['channel'] = self.attributes['channel']
-        return ret
+                subscribers = subscribers.union(channel.get(ch).subscribers)
+            for subscriber in subscribers:
+                subscriber.publish(data)
+
+        ch = channel.get(self.attributes['channel'])
+        return ch.publish(self)
 
 class Message():
     def __init__(self, httpRequest):

@@ -7,21 +7,11 @@ class Channel():
         self.subscribers = set()
 
     def publish(self, msg):
-        reactor.callLater(0.01, self._doPublish, msg)
-
         response =  { 'channel': msg.attributes['channel'],
                       'successful': True,
                       'id': msg.attributes['id'] }
 
         return response
-
-    def _doPublish(self, msg):
-        data = [{ 'channel': msg.attributes['channel'],
-                  'data': msg.attributes['data'],
-                  'id': msg.attributes['id'] }]
-
-        for subscriber in self.subscribers:
-            subscriber.publish(data)
 
     def subscribe(self, c):
         self.subscribers.add(c)
@@ -114,9 +104,7 @@ def expand(ch):
     return chset
 
 def subscribe(ch, c):
-    chset = expand(ch)
-    for ch in chset:
-        get(ch).subscribe(c)
+    get(ch).subscribe(c)
 
 def get(channelId):
     try:
