@@ -1,4 +1,3 @@
-from twisted.internet import reactor
 import client
 
 class Channel():
@@ -6,11 +5,10 @@ class Channel():
         self.id = channelId
         self.subscribers = set()
 
-    def publish(self, msg):
-        response =  { 'channel': msg.attributes['channel'],
-                      'successful': True,
-                      'id': msg.attributes['id'] }
-        return response
+    def handle(self, msg):
+        return { 'channel': msg.attributes['channel'],
+                 'successful': True,
+                 'id': msg.attributes['id'] }
 
     def subscribe(self, c):
         self.subscribers.add(c)
@@ -30,29 +28,27 @@ class Handshake(Meta):
     def __init__(self):
         Meta.__init__(self, '/meta/handshake')
 
-    def publish(self, msg):
-        response = { 'id': msg.attributes['id'],
-                      'channel': msg.attributes['channel'],
-                      'version': msg.attributes['version'],
-                      'minimumVersion': msg.attributes['minimumVersion'],
-                      'supportedConnectionTypes': ["long-polling"],
-                      'successful': True,
-                      'authSuccessful': True,
-                      'advice': { 'reconnect': 'retry' } }
-        return response
+    def handle(self, msg):
+        return { 'id': msg.attributes['id'],
+                 'channel': msg.attributes['channel'],
+                 'version': msg.attributes['version'],
+                 'minimumVersion': msg.attributes['minimumVersion'],
+                 'supportedConnectionTypes': ["long-polling"],
+                 'successful': True,
+                 'authSuccessful': True,
+                 'advice': { 'reconnect': 'retry' } }
 
 class Connect(Meta):
     def __init__(self):
         Meta.__init__(self, '/meta/connect')
 
-    def publish(self, msg):
-        response = { 'id': msg.attributes['id'],
-                     'channel': msg.attributes['channel'],
-                     'successful': True,
-                     'error': '',
-                     'timestamp': '12:00:00 1970',
-                     'advice': { 'reconnect': 'retry' } }
-        return response
+    def handle(self, msg):
+        return { 'id': msg.attributes['id'],
+                 'channel': msg.attributes['channel'],
+                 'successful': True,
+                 'error': '',
+                 'timestamp': '12:00:00 1970',
+                 'advice': { 'reconnect': 'retry' } }
 
 class Disconnect(Meta):
     def __init__(self):
@@ -62,21 +58,17 @@ class Subscribe(Meta):
     def __init__(self):
         Meta.__init__(self, '/meta/subscribe')
 
-    def publish(self, msg):
-        reactor.callLater(0.01, self._doPublish, msg)
-
-        response = { 'id': msg.attributes['id'],
-                     'channel': msg.attributes['channel'],
-                     'successful': True,
-                     'error': '',
-                     'clientId': msg.attributes['clientId'],
-                     'timestamp': '12:00:00 1970',
-                     'advice': { 'reconnect': 'retry' } }
-        return response
-
-    def _doPublish(self, msg):
+    def handle(self, msg):
         clientId = msg.attributes['clientId']
         subscribe(msg.attributes['subscription'], client.findById(clientId))
+
+        return { 'id': msg.attributes['id'],
+                 'channel': msg.attributes['channel'],
+                 'successful': True,
+                 'error': '',
+                 'clientId': msg.attributes['clientId'],
+                 'timestamp': '12:00:00 1970',
+                 'advice': { 'reconnect': 'retry' } }
 
 class Unsubscribe(Meta):
     def __init__(self):
