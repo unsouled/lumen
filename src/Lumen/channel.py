@@ -10,7 +10,6 @@ class Channel():
         response =  { 'channel': msg.attributes['channel'],
                       'successful': True,
                       'id': msg.attributes['id'] }
-
         return response
 
     def subscribe(self, c):

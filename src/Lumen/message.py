@@ -1,3 +1,4 @@
+from twisted.internet import reactor
 from json import JSONDecoder
 import channel
 
@@ -9,19 +10,22 @@ class Request():
 
     def process(self):
         if not self.attributes['channel'].startswith('/meta/'):
-            data = [{ 'channel': self.attributes['channel'],
-                      'data': self.attributes['data'],
-                      'id': self.attributes['id'] }]
-
-            subscribers = set()
-            chs = channel.expand(self.attributes['channel'])
-            for ch in chs:
-                subscribers = subscribers.union(channel.get(ch).subscribers)
-            for subscriber in subscribers:
-                subscriber.publish(data)
+            reactor.callLater(0.01, self._doPublish)
 
         ch = channel.get(self.attributes['channel'])
         return ch.publish(self)
+
+    def _doPublish(self):
+        data = [{ 'channel': self.attributes['channel'],
+                  'data': self.attributes['data'],
+                  'id': self.attributes['id'] }]
+
+        subscribers = set()
+        chs = channel.expand(self.attributes['channel'])
+        for ch in chs:
+            subscribers = subscribers.union(channel.get(ch).subscribers)
+        for subscriber in subscribers:
+            subscriber.publish(data)
 
 class Message():
     def __init__(self, httpRequest):
