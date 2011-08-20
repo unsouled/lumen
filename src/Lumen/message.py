@@ -1,6 +1,7 @@
 from twisted.internet import reactor
 from json import JSONDecoder
 import channel
+import client
 
 class Request():
     def __init__(self, attributes):
@@ -19,10 +20,8 @@ class Request():
                   'data': self.attributes['data'],
                   'id': self.attributes['id'] }]
 
-        subscribers = set()
-        chs = channel.expand(self.attributes['channel'])
-        for ch in chs:
-            subscribers = subscribers.union(channel.get(ch).subscribers)
+        ch = self.attributes['channel']
+        subscribers = filter(lambda c: c.isSubscribing(ch), client.clients.values())
         for subscriber in subscribers:
             subscriber.publish(data)
 
