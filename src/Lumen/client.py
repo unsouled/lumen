@@ -69,6 +69,11 @@ class IOSClient(Client):
         msg.httpRequest.write(JSONEncoder().encode(responses))
         msg.httpRequest.finish()
 
+        reactor.callLater(0.01, self.__connectToAPNSServer)
+
+    def __connectToAPNSServer(self):
+        pass
+
     def publish(self, msg):
         # using apns
         pass
