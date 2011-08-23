@@ -29,8 +29,14 @@ class Client():
             msg.httpRequest.finish()
         else:
             self.connectRequest = msg.httpRequest
+            self.connectRequest.notifyFinish().addErrback(self.__connectionLost)
             self.responses = responses
             self.publish([])
+
+    def __connectionLost(self, reason):
+        print reason
+        self.connectRequest = None
+        self.responses = []
 
     def publish(self, msg):
         self.receivedMessages.extend(msg)
