@@ -19,7 +19,12 @@ class Client():
     def __doHandleMessage(self, msg):
         responses = msg.handle(self)
         chs = [response['channel'] for response in responses]
-        if '/meta/connect' not in chs:
+
+        if '/meta/disconnect' in chs and self.connectRequest:
+            self.responses.extend(self.receivedMessages)
+            self.connectRequest.write(JSONEncoder().encode(self.responses))
+            self.connectRequest.finish()
+        elif '/meta/connect' not in chs:
             msg.httpRequest.write(JSONEncoder().encode(responses))
             msg.httpRequest.finish()
         else:
