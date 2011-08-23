@@ -1,7 +1,7 @@
 from twisted.web import resource
 import twisted.web.server
 import message
-import client
+import dispatcher
 
 class Bayeux(resource.Resource):
     class Server(resource.Resource):
@@ -14,8 +14,7 @@ class Bayeux(resource.Resource):
             httpRequest.setHeader('content-type', 'text/json')
 
             msg = message.Message(httpRequest)
-            c = client.findByMessage(msg)
-            c.handleMessage(msg)
+            dispatcher.dispatch(msg)
 
             return twisted.web.server.NOT_DONE_YET
 
