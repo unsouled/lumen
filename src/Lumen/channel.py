@@ -34,7 +34,7 @@ class Handshake(Meta):
                  'channel': msg.attributes['channel'],
                  'version': msg.attributes['version'],
                  'minimumVersion': msg.attributes['minimumVersion'],
-                 'supportedConnectionTypes': ["long-polling"],
+                 'supportedConnectionTypes': ['long-polling', 'apns'],
                  'successful': True,
                  'authSuccessful': True,
                  'advice': { 'reconnect': 'retry' } }

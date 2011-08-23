@@ -14,9 +14,9 @@ class Client():
         self.channelsSubscribing = set()
 
     def handleMessage(self, msg):
-        reactor.callLater(0.01, self.__doHandleMessage, msg)
+        reactor.callLater(0.01, self._doHandleMessage, msg)
 
-    def __doHandleMessage(self, msg):
+    def _doHandleMessage(self, msg):
         responses = msg.handle(self)
         chs = [response['channel'] for response in responses]
 
@@ -59,6 +59,20 @@ class Client():
         for ch in self.channelsSubscribing:
             channel.get(ch).unsubscribe(self)
 
+class IOSClient(Client):
+    def __init__(self, clientId, deviceToken):
+        Client.__init__(self, clientId)
+        self.deviceToken = deviceToken
+
+    def _doHandleMessage(self, msg):
+        responses = msg.handle(self)
+        msg.httpRequest.write(JSONEncoder().encode(responses))
+        msg.httpRequest.finish()
+
+    def publish(self, msg):
+        # using apns
+        pass
+
 def generateClientId():
     return uuid.uuid4().urn[9:]
 
@@ -67,3 +81,14 @@ def findById(clientId):
 
 def remove(clientId):
     client.clients.pop(clientId)
+
+class ClientFactory():
+    @staticmethod
+    def create(handshake):
+        clientId = generateClientId()
+        if 'apns' in handshake.attributes['supportedConnectionTypes']:
+            c = IOSClient(clientId)
+        else:
+            c = Client(clientId)
+        clients[clientId] = c
+        return c
