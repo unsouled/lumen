@@ -66,15 +66,24 @@ class Subscribe(Meta):
 
         return { 'id': msg.attributes['id'],
                  'channel': msg.attributes['channel'],
+                 'subscription': msg.attributes['subscription'],
                  'successful': True,
-                 'error': '',
-                 'clientId': msg.attributes['clientId'],
-                 'timestamp': '12:00:00 1970',
-                 'advice': { 'reconnect': 'retry' } }
+                 'error': ''}
 
 class Unsubscribe(Meta):
     def __init__(self):
         Channel.__init__(self, '/meta/unsubscribe')
+
+    def process(self, msg):
+        clientId = msg.attributes['clientId']
+        c = client.findById(clientId)
+        reactor.callLater(0.01, c.unsubscribe, msg.attributes['subscription'])
+
+        return { 'id': msg.attributes['id'],
+                 'channel': msg.attributes['channel'],
+                 'subscription': msg.attributes['subscription'],
+                 'successful': True,
+                 'error': '' }
 
 channels = { '/meta/handshake': Handshake(),
              '/meta/connect': Connect(),
