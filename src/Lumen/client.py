@@ -92,7 +92,8 @@ class ClientFactory():
     def create(handshake):
         clientId = generateClientId()
         if 'apns' in handshake.attributes['supportedConnectionTypes']:
-            c = IOSClient(clientId)
+            deviceToken = handshake.attributes['deviceToken']
+            c = IOSClient(clientId, deviceToken)
         else:
             c = Client(clientId)
         clients[clientId] = c
