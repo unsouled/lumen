@@ -55,6 +55,16 @@ class Disconnect(Meta):
     def __init__(self):
         Meta.__init__(self, '/meta/disconnect')
 
+    def process(self, msg):
+        clientId = msg.attributes['clientId']
+        c = client.findById(clientId)
+        c.disconnect()
+        client.remove(clientId)
+
+        return { 'id': msg.attributes['id'],
+                 'channel': msg.attributes['channel'],
+                 'successful': True }
+
 class Subscribe(Meta):
     def __init__(self):
         Meta.__init__(self, '/meta/subscribe')

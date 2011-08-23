@@ -11,11 +11,12 @@ class Client():
         self.responses = []
         self.receivedMessages = []
         self.connectRequest = None
+        self.channelsSubscribing = set()
 
     def handleMessage(self, msg):
-        reactor.callLater(0.01, self._doHandle, msg)
+        reactor.callLater(0.01, self.__doHandleMessage, msg)
 
-    def _doHandle(self, msg):
+    def __doHandleMessage(self, msg):
         responses = msg.handle(self)
         chs = [response['channel'] for response in responses]
         if '/meta/connect' not in chs:
@@ -38,12 +39,20 @@ class Client():
 
     def subscribe(self, ch):
         channel.get(ch).subscribe(self)
+        self.channelsSubscribing.add(ch)
 
     def unsubscribe(self, ch):
         channel.get(ch).unsubscribe(self)
+
+    def disconnect(self):
+        for ch in self.channelsSubscribing:
+            channel.get(ch).unsubscribe(self)
 
 def generateClientId():
     return uuid.uuid4().urn[9:]
 
 def findById(clientId):
     return clients[clientId]
+
+def remove(clientId):
+    client.clients.pop(clientId)
