@@ -4,11 +4,18 @@ import client
 class Channel():
     def __init__(self, channelId):
         self.id = channelId
+        self.subscribers = set()
 
     def process(self, msg):
        return { 'channel': msg.attributes['channel'],
                  'successful': True,
                  'id': msg.attributes['id'] }
+
+    def subscribe(self, c):
+        self.subscribers.add(c)
+
+    def unsubscribe(self, c):
+        self.subscribers.remove(c)
 
 class Meta(Channel):
     def __init__(self, channelId):
@@ -74,6 +81,14 @@ channels = { '/meta/handshake': Handshake(),
              '/meta/disconnect': Disconnect(),
              '/meta/subscribe': Subscribe(),
              '/meta/unsubscribe': Unsubscribe() }
+
+def expand(ch):
+    chs = ['/**', ch, '/' + '/'.join(ch.split('/')[1:-1]) + '/*']
+    segments = ch.split('/')[1:-1]
+    while segments:
+        chs.append('/' + '/'.join(segments) + '/**')
+        segments = segments[:-1]
+    return chs
 
 def get(channelId):
     try:
