@@ -34,10 +34,12 @@ class Message():
 
         self.requests = [Request(data) for data in self.content]
 
-    def handle(self):
+    def handle(self, c):
         responses = []
         while self.requests:
             request = self.requests.pop(0)
-            responses.append (request.process())
+            response = request.process()
+            response['clientId'] = c.id
+            responses.append (response)
 
         return responses

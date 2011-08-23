@@ -17,17 +17,12 @@ class Client():
         reactor.callLater(0.01, self._doHandle, msg)
 
     def _doHandle(self, msg):
-        responses = msg.handle()
+        responses = msg.handle(self)
         hasConnect = False
-        for response in responses:
-            response['clientId'] = self.id
-            if response['channel'] == '/meta/connect':
-                hasConnect = True
-
-        if not hasConnect:
-            httpRequest = msg.httpRequest
-            httpRequest.write(JSONEncoder().encode(responses))
-            httpRequest.finish()
+        chs = [response['channel'] for response in responses]
+        if '/meta/connect' not in chs:
+            msg.httpRequest.write(JSONEncoder().encode(responses))
+            msg.httpRequest.finish()
         else:
             self.httpRequest = msg.httpRequest
             self.responses = responses
@@ -69,17 +64,6 @@ class Client():
 
 def generateClientId():
     return uuid.uuid4().urn[9:]
-
-def findByMessage(msg):
-    try:
-        clientId = msg.requests[0].attributes['clientId']
-        c = clients[clientId]
-    except:
-        clientId = generateClientId()
-        c = Client(clientId)
-        clients[clientId] = c
-
-    return c
 
 def findById(clientId):
     return clients[clientId]
