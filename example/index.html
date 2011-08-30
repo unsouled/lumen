@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="jquery.mobile-1.0b2.min.css" />
+    <script type="text/javascript" src="jquery-1.6.2.min.js"></script>
+    <!--script type="text/javascript" src="jquery.mobile-1.0b2.min.js"></script-->
+    <script type="text/javascript" src="faye-browser-min.js"></script>
+    <script type="text/javascript">
+      var client = new Faye.Client('http://localhost:8080/lumen');
+
+      $(document).ready(function() {
+          var subscription = client.subscribe('/test', function(message) {
+            var messages = $('#messages');
+            messages.prepend($("<li></li>").html(message.body));
+          });
+
+          $('#messageForm').submit(function() {
+            var messageBody = $('#message').val();
+            client.publish('/test', { body: messageBody });
+            return false;
+          });
+     });
+    </script>
+  </head>
+  <body>
+    <div data-role="page">
+      <div data-role="header">
+        <h1>Example</h1>
+      </div>
+      <div data-role="content">
+        <div data-role="fieldcontain">
+          <form id="messageForm" data-ajax="false">
+            <input id="message" type="text" value="" />
+            <input type="submit" data-inline="true" value="Send" />
+          </form>
+        </div>
+        <ul id="messages" data-role="listview">
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
