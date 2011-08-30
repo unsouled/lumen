@@ -1,10 +1,13 @@
 import client
 
-
 def dispatch(msg):
     try:
-        clientId = msg.requests[0].attributes['clientId']
-        c = client.clients[clientId]
+        channel =  msg.requests[0].attributes['channel']
+        if channel == '/meta/handshake':
+            c = client.ClientFactory.create(msg)
+        else:
+            clientId = msg.requests[0].attributes['clientId']
+            c = client.clients[clientId]
+        c.handleMessage(msg)
     except:
-        c = client.ClientFactory.create(msg.requests[0])
-    c.handleMessage(msg)
+        msg.httpRequest.finish()

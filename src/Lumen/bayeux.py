@@ -1,6 +1,6 @@
 from twisted.web import resource
 import twisted.web.server
-import message
+from message import MessageFactory
 import dispatcher
 
 class Bayeux(resource.Resource):
@@ -13,7 +13,7 @@ class Bayeux(resource.Resource):
             print httpRequest
             httpRequest.setHeader('content-type', 'text/json')
 
-            msg = message.Message(httpRequest)
+            msg = MessageFactory.create(httpRequest)
             dispatcher.dispatch(msg)
 
             return twisted.web.server.NOT_DONE_YET

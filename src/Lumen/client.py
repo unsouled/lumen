@@ -9,8 +9,8 @@ class Client():
     def __init__(self, clientId):
         self.id = clientId
         self.responses = []
-        self.receivedMessages = []
-        self.connectRequest = None
+        self.receivedDatas = []
+        self.connectMessage = None
         self.channelsSubscribing = set()
 
     def handleMessage(self, msg):
@@ -20,33 +20,30 @@ class Client():
         responses = msg.handle(self)
         chs = [response['channel'] for response in responses]
 
-        if '/meta/disconnect' in chs and self.connectRequest:
-            self.responses.extend(self.receivedMessages)
-            self.connectRequest.write(JSONEncoder().encode(self.responses))
-            self.connectRequest.finish()
+        if '/meta/disconnect' in chs and self.connectMessage:
+            self.responses.extend(self.receivedDatas)
+            self.connectMessage.response(self.responses)
         elif '/meta/connect' not in chs:
-            msg.httpRequest.write(JSONEncoder().encode(responses))
-            msg.httpRequest.finish()
+            msg.response(responses)
         else:
-            self.connectRequest = msg.httpRequest
-            self.connectRequest.notifyFinish().addErrback(self.__connectionLost)
+            msg.httpRequest.notifyFinish().addErrback(self.__connectionLost)
+            self.connectMessage = msg
             self.responses = responses
             self.publish([])
 
     def __connectionLost(self, reason):
         print reason
-        self.connectRequest = None
+        self.connectMessage = None
         self.responses = []
 
-    def publish(self, msg):
-        self.receivedMessages.extend(msg)
-        if self.receivedMessages and self.connectRequest:
-            self.responses.extend(self.receivedMessages)
-            self.connectRequest.write(JSONEncoder().encode(self.responses))
-            self.connectRequest.finish()
+    def publish(self, data):
+        self.receivedDatas.extend(data)
+        if self.receivedDatas and self.connectMessage:
+            self.responses.extend(self.receivedDatas)
+            self.connectMessage.response(self.responses)
             self.responses = []
-            self.receivedMessages = []
-            self.connectRequest = None
+            self.receivedDatas = []
+            self.connectMessage = None
 
     def subscribe(self, ch):
         channel.get(ch).subscribe(self)
@@ -66,8 +63,7 @@ class IOSClient(Client):
 
     def _doHandleMessage(self, msg):
         responses = msg.handle(self)
-        msg.httpRequest.write(JSONEncoder().encode(responses))
-        msg.httpRequest.finish()
+        msg.response(responses)
 
         reactor.callLater(0.01, self.__connectToAPNSServer)
 
@@ -89,7 +85,8 @@ def remove(clientId):
 
 class ClientFactory():
     @staticmethod
-    def create(handshake):
+    def create(msg):
+        handshake = msg.requests[0]
         clientId = generateClientId()
         if 'apns' in handshake.attributes['supportedConnectionTypes']:
             deviceToken = handshake.attributes['deviceToken']
