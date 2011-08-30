@@ -8,8 +8,8 @@ class Channel():
 
     def process(self, msg):
        return { 'channel': msg.attributes['channel'],
-                 'successful': True,
-                 'id': msg.attributes['id'] }
+                'successful': True,
+                'id': msg.attributes['id'] }
 
     def subscribe(self, c):
         self.subscribers.add(c)
