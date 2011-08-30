@@ -81,7 +81,7 @@ def findById(clientId):
     return clients[clientId]
 
 def remove(clientId):
-    client.clients.pop(clientId)
+    clients.pop(clientId)
 
 class ClientFactory():
     @staticmethod
