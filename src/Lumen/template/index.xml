@@ -134,12 +134,11 @@
         <div id="wrapper">
             <ul id="menu" nevow:render="menuitems"></ul>
             <div id="content">
+                <h2 nevow:render="title" />
                 <span nevow:render="content" />
             </div>
             <div id="footer">
-                <p>
-                    <span nevow:render="footer" />
-                </p>
+                <span nevow:render="footer" />
             </div>
         </div>
     </body>

@@ -7,21 +7,22 @@ from twisted.web import resource
 
 class WebConsoleLayout(rend.Page):
     docFactory = loaders.xmlfile('template/index.xml')
+    endpoint = '/' + lumen.config.get('webconsole', 'endpoint')
     menus = [{ 'id' : 'dashboard',
                'label': 'Overview',
-               'url': '/console/dashboard' },
+               'url': endpoint + '/dashboard' },
              { 'id' : 'clients',
                'label': 'Clients',
-               'url': '/console/clients' },
+               'url': endpoint + '/clients' },
              { 'id': 'channels',
                'label': 'Channels',
-               'url': '/console/channels' },
+               'url': endpoint + '/channels' },
              { 'id': 'subscriptions',
                'label': 'Subscriptions',
-               'url': '/console/subscriptions' },
+               'url': endpoint + '/subscriptions' },
              { 'id': 'transports',
                'label': 'Transports',
-               'url': '/console/transports' }]
+               'url': endpoint + '/transports' }]
 
     def __init__(self, data):
         rend.Page.__init__(self, data)
@@ -55,7 +56,7 @@ class ClientsPage(WebConsoleLayout):
     def __init__(self):
         WebConsoleLayout.__init__(self, 'clients')
 
-    def render_title(self):
+    def render_title(self, context, data):
         return tags.h2()["Clients"]
 
     def render_clients_list(self):
@@ -80,13 +81,13 @@ class ClientsPage(WebConsoleLayout):
         return result
 
     def render_content(self, context, data):
-        return [self.render_title(), self.render_clients_list()]
+        return [self.render_clients_list()]
 
 class ChannelsPage(WebConsoleLayout):
     def __init__(self):
         WebConsoleLayout.__init__(self, 'channels')
 
-    def render_title(self):
+    def render_title(self, context, data):
         return tags.h2()["Channels"]
 
     def render_channels_list(self):
@@ -107,11 +108,14 @@ class ChannelsPage(WebConsoleLayout):
         return result
 
     def render_content(self, context, data):
-        return [self.render_title(), self.render_channels_list()]
+        return [self.render_channels_list()]
 
 class SubscriptionsPage(WebConsoleLayout):
     def __init__(self):
         WebConsoleLayout.__init__(self, 'subscriptions')
+
+    def render_title(self, context, data):
+        return tags.h2()['Subscriptions']
 
     def render_content(self, context, data):
         return "This is Subscriptions Page"
@@ -120,6 +124,9 @@ class TransportsPage(WebConsoleLayout):
     def __init__(self):
         WebConsoleLayout.__init__(self, 'transports')
 
+    def render_title(self, context, data):
+        return tags.h2()['Transports']
+
     def render_content(self, context, data):
         return "This is Transports Page"
 
@@ -127,7 +134,7 @@ class DashboardPage(WebConsoleLayout):
     def __init__(self):
         WebConsoleLayout.__init__(self, 'dashboard')
 
-    def render_title(self):
+    def render_title(self, context, data):
         return tags.h2()['Overview']
 
     def render_bayeux_environments(self):
@@ -167,7 +174,6 @@ class DashboardPage(WebConsoleLayout):
 
     def render_content(self, context, data):
         return [
-            self.render_title(),
             self.render_bayeux_environments(),
             self.render_webconsole_environments(),
         ]
