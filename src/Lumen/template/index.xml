@@ -1,0 +1,146 @@
+<html xmlns:nevow="http://nevow.com/ns/nevow/0.1">
+    <head>
+        <title>Lumen Web Console</title>
+        <style>
+            html,body {
+                height:100%;
+            }
+
+            * {
+                font-size: 14px;
+            }
+
+            body {
+                font-family: sans-serif;
+                padding: 0;
+                margin: 0;
+                color: #444;
+            }
+
+            p {
+                padding: 0;
+                margin: 0;
+            }
+
+            #content table {
+                min-width: 30em;
+                border-collapse: collapse;
+                margin-bottom: 1em;
+            }
+
+            th {
+                background: #eee;
+                text-align: left;
+                color: #888;
+            }
+
+            th, td {
+                padding: 0.2em 0.5em;
+                border-collapse: collapsed;
+                border: 1px solid #ccc;
+            }
+
+            h1 {
+                padding: 0 0.2em; margin: 0;
+            }
+
+            h2 {
+                font-size: 1.4em;
+                padding: 0;
+                margin: 0.2em 0;
+                color: #8020e0;
+            }
+
+            h3 {
+                font-size: 1.2em;
+                padding: 0;
+                margin: 0.5em 0;
+            }
+
+
+            #wrapper {
+                width: 100%;
+                height: 100%;
+                min-height: 100%;
+                position:relative;
+            }
+
+            #menu {
+                padding: 0.5em 0.5em 0 0.5em;
+                margin: 0;
+                list-style: none;
+                background: #000;
+                border-bottom: 8px solid #8020e0;
+                overflow:auto;
+            }
+
+            #menu li {
+                float: left;
+                background: #000;
+                min-width: 6em;
+                padding: 0 0.5em;
+                text-align: center;
+            }
+
+            #menu li:hover, #menu li.selected {
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+            }
+
+            #menu li:hover a {
+                color: #b070ff;
+            }
+
+            #menu li.selected {
+                background: #8020e0;
+            }
+
+            #menu li.selected a {
+                color: #fff;
+            }
+
+            #menu li a {
+                font-weight: bold;
+                display: block;
+                padding: 0.5em;
+                text-decoration: none;
+                color: #fff;
+            }
+
+            #content {
+                padding: 0.5em;
+                clear: both;
+            }
+
+            #footer {
+                border-top: 3px solid #ddd;
+                background: #eee;
+                color: #888;
+                width: 100%;
+                position:absolute;
+                overflow: auto;
+                bottom: 0;
+                text-align: center;
+                padding: 0.5em 0;
+            }
+
+            #footer a {
+                color: #888;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="wrapper">
+            <ul id="menu" nevow:render="menuitems"></ul>
+            <div id="content">
+                <span nevow:render="content" />
+            </div>
+            <div id="footer">
+                <p>
+                    <span nevow:render="footer" />
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

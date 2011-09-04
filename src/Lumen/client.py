@@ -2,6 +2,7 @@ from twisted.internet import reactor
 from json import JSONEncoder
 import uuid
 import channel
+from datetime import datetime
 
 clients = {}
 
@@ -12,27 +13,12 @@ class Client():
         self.receivedDatas = []
         self.connectMessage = None
         self.channelsSubscribing = set()
-
-    def handleMessage(self, msg):
-        reactor.callLater(0.01, self._doHandleMessage, msg)
-
-    def _doHandleMessage(self, msg):
-        responses = msg.handle(self)
-        chs = [response['channel'] for response in responses]
-
-        if '/meta/disconnect' in chs and self.connectMessage:
-            self.responses.extend(self.receivedDatas)
-            self.connectMessage.response(self.responses)
-        elif '/meta/connect' not in chs:
-            msg.response(responses)
-        else:
-            msg.httpRequest.notifyFinish().addErrback(self.__connectionLost)
-            self.connectMessage = msg
-            self.responses = responses
-            self.publish([])
+        self.typename = 'comet'
+        self.createdAt = datetime.now()
 
     def __connectionLost(self, reason):
         print reason
+        clients.remove(self.id)
         self.connectMessage = None
         self.responses = []
 
@@ -86,12 +72,13 @@ def remove(clientId):
 class ClientFactory():
     @staticmethod
     def create(msg):
-        handshake = msg.requests[0]
+        #handshake = msg.requests[0]
         clientId = generateClientId()
-        if 'apns' in handshake.attributes['supportedConnectionTypes']:
-            deviceToken = handshake.attributes['deviceToken']
-            c = IOSClient(clientId, deviceToken)
-        else:
-            c = Client(clientId)
+        # FIXME
+        #if 'apns' in handshake.attributes['supportedConnectionTypes']:
+        #    deviceToken = handshake.attributes['deviceToken']
+        #    c = IOSClient(clientId, deviceToken)
+        #else:
+        c = Client(clientId)
         clients[clientId] = c
         return c

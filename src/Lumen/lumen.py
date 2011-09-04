@@ -3,7 +3,10 @@ from twisted.web import server
 from twisted.internet import reactor
 import bayeux
 
-port = 8080
+import config
+
+config = config.ConfigFactory.create('ini')
+port = int(config.get('default', 'port'))
 
 def main():
     lumen = server.Site(bayeux.Bayeux())
