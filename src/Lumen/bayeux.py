@@ -1,4 +1,4 @@
-from twisted.web import resource
+from twisted.web import resource, static
 import twisted.web.server
 import dispatcher
 import webconsole
@@ -23,6 +23,7 @@ class Bayeux(resource.Resource):
         resource.Resource.__init__ (self)
         self.putChild(lumen.config.get('default', 'endpoint'), Bayeux.Server())
         self.putChild(lumen.config.get('webconsole', 'endpoint'), webconsole.WebConsole())
+        self.putChild('public', static.File(lumen.config.get('default', 'APP_ROOT') + '/' + 'public'))
 
     def render_GET(self, request):
         pass

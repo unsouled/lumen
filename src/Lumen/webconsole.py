@@ -6,7 +6,7 @@ from nevow import loaders, rend, tags
 from twisted.web import resource
 
 class WebConsoleLayout(rend.Page):
-    docFactory = loaders.xmlfile('template/index.xml')
+    docFactory = loaders.xmlfile(lumen.config.get('default', 'APP_ROOT') + '/' + 'template/index.xml')
     endpoint = '/' + lumen.config.get('webconsole', 'endpoint')
     menus = [{ 'id' : 'dashboard',
                'label': 'Overview',

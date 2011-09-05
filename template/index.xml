@@ -1,0 +1,18 @@
+<html xmlns:nevow="http://nevow.com/ns/nevow/0.1">
+    <head>
+        <title>Lumen Web Console</title>
+        <link rel="stylesheet" type="text/css" href="/public/css/console.css" />
+    </head>
+    <body>
+        <div id="wrapper">
+            <ul id="menu" nevow:render="menuitems"></ul>
+            <div id="content">
+                <h2 nevow:render="title" />
+                <span nevow:render="content" />
+            </div>
+            <div id="footer">
+                <span nevow:render="footer" />
+            </div>
+        </div>
+    </body>
+</html>

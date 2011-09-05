@@ -2,7 +2,6 @@ import sys
 from twisted.web import server
 from twisted.internet import reactor
 import bayeux
-
 import config
 
 config = config.ConfigFactory.create('ini')
