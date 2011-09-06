@@ -8,29 +8,22 @@ class Channel():
         self.id = channelId
         self.subscribers = set()
 
+    def getAllPatternSubscribers(self):
+        subscribers = set()
+        chs = expand(self.id)
+        for ch in chs:
+            subscribers = subscribers.union(get(ch).subscribers)
+        return subscribers
+
     def publish(self, msg):
         d = defer.Deferred()
         d.callback([{ 'channel': msg.attributes['channel'],
                 'successful': True,
                 'id': msg.attributes['id'] }])
 
-        for c in self.subscribers:
-            try:
-                l = connections[c.id]
-
-                for dc, dmsg in l:
-                    try:
-                        dc.callback([{ 'id': dmsg.attributes['id'],
-                                 'channel': dmsg.attributes['channel'],
-                                 'successful': True,
-                                 'error': '',
-                                 'timestamp': '12:00:00 1970',
-                                 'data': msg.attributes['data'],
-                                 'advice': { 'reconnect': 'retry' } }, msg.attributes])
-                    except:
-                        del connections[c.id]
-            except KeyError:
-                pass
+        subscribers = self.getAllPatternSubscribers()
+        for subscriber in subscribers:
+            subscriber.publish(msg)
 
         return d
 
@@ -72,12 +65,8 @@ class Connect(Meta):
 
     def publish(self, msg):
         d = defer.Deferred()
-
-        if not hasattr(connections,msg.attributes['clientId']):
-            connections[msg.attributes['clientId']] = []
-
-        l = connections[msg.attributes['clientId']]
-        l.append((d, msg))
+        c = client.clients[msg.attributes['clientId']]
+        c.connection = (d, msg)
 
         return d
 
@@ -139,7 +128,7 @@ channels = { '/meta/handshake': Handshake(),
              '/meta/unsubscribe': Unsubscribe() }
 
 def expand(ch):
-    chs = ['/**', ch, '/' + '/'.join(ch.split('/')[1:-1]) + '/*']
+    chs = ['/**', ch, '/'.join(ch.split('/')[:-1]).__add__('/*').replace('//*', '/*')]
     segments = ch.split('/')[1:-1]
     while segments:
         chs.append('/' + '/'.join(segments) + '/**')

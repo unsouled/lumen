@@ -3,33 +3,29 @@ from json import JSONEncoder
 import uuid
 import channel
 from datetime import datetime
+import apns
 
 clients = {}
 
 class Client():
     def __init__(self, clientId):
         self.id = clientId
-        self.responses = []
-        self.receivedDatas = []
-        self.connectMessage = None
+        self.connection = None
         self.channelsSubscribing = set()
         self.typename = 'comet'
         self.createdAt = datetime.now()
 
-    def __connectionLost(self, reason):
-        print reason
-        clients.remove(self.id)
-        self.connectMessage = None
-        self.responses = []
-
-    def publish(self, data):
-        self.receivedDatas.extend(data)
-        if self.receivedDatas and self.connectMessage:
-            self.responses.extend(self.receivedDatas)
-            self.connectMessage.response(self.responses)
-            self.responses = []
-            self.receivedDatas = []
-            self.connectMessage = None
+    def publish(self, msg):
+        d = self.connection[0]
+        cmsg = self.connection[1]
+        data = [{'id': cmsg.attributes['id'],
+                 'channel': cmsg.attributes['channel'],
+                 'successful': True,
+                 'error': '',
+                 'timestamp': '12:00:00 1970',
+                 'data': msg.attributes['data'],
+                 'advice': { 'reconnect': 'retry' } }, msg.attributes]
+        d.callback(data)
 
     def subscribe(self, ch):
         channel.get(ch).subscribe(self)
@@ -53,11 +49,8 @@ class IOSClient(Client):
 
         reactor.callLater(0.01, self.__connectToAPNSServer)
 
-    def __connectToAPNSServer(self):
-        pass
-
     def publish(self, msg):
-        # using apns
+#        apns.push(self.deviceToken, msg.attributes, cert, priv)
         pass
 
 def generateClientId():
