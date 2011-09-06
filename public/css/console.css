@@ -66,6 +66,7 @@ h3 {
     margin: 0;
     list-style: none;
     background: #000;
+    border-top: 4px solid #444;
     border-bottom: 8px solid #8020e0;
     overflow:auto;
 }
@@ -104,7 +105,7 @@ h3 {
 }
 
 #content {
-    padding: 0.5em;
+    padding: 1em;
     clear: both;
 }
 

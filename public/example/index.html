@@ -11,6 +11,7 @@
       var client = new Faye.Client('/lumen');
 
       $(document).ready(function() {
+          var name = prompt("Please input your name");
           var subscription = client.subscribe('/test', function(message) {
             var messages = $('#messages');
             messages.prepend($("<li></li>").html(
@@ -23,7 +24,7 @@
           $('#messageForm').submit(function() {
             var messageBody = $('#message').val();
             $('#message').val('');
-            client.publish('/test', { from: client._0,  body: messageBody });
+            client.publish('/test', { from: name,  body: messageBody });
             return false;
           });
      });
