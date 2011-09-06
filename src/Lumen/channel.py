@@ -1,8 +1,6 @@
 from twisted.internet import reactor, defer
 import client
 
-connections = {}
-
 class Channel():
     def __init__(self, channelId):
         self.id = channelId

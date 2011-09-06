@@ -1,4 +1,4 @@
-from json import JSONEncoder
+import json
 
 class Transport():
     pass
@@ -12,7 +12,7 @@ class LongPolling(Transport):
         return self.content
 
     def write(self, data):
-        self.httpRequest.write(JSONEncoder().encode(data))
+        self.httpRequest.write(json.dumps(data))
         self.httpRequest.finish()
 
 class CallbackPolling(Transport):
@@ -25,7 +25,7 @@ class CallbackPolling(Transport):
         return self.content
 
     def write(self, data):
-        data = '%s(%s)' % (self.callback, JSONEncoder().encode(data))
+        data = '%s(%s)' % (self.callback, json.dumps(data))
         self.httpRequest.write(data)
         self.httpRequest.finish()
 

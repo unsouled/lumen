@@ -1,13 +1,15 @@
 import client
 import channel
-import lumen
+import config
 
 from nevow import loaders, rend, tags
 from twisted.web import resource
 
+from pkg_resources import resource_filename
+
 class WebConsoleLayout(rend.Page):
-    docFactory = loaders.xmlfile(lumen.config.get('default', 'APP_ROOT') + '/' + 'template/index.xml')
-    endpoint = '/' + lumen.config.get('webconsole', 'endpoint')
+    docFactory = loaders.xmlfile(resource_filename(__name__, 'res/index.xml'))
+    endpoint = '/' + config.getConfig().get('webconsole', 'endpoint')
     menus = [{ 'id' : 'dashboard',
                'label': 'Overview',
                'url': endpoint + '/dashboard' },
@@ -46,7 +48,7 @@ class WebConsoleLayout(rend.Page):
 
     def render_footer(self, context, data):
         return  tags.p() [
-                tags.div()['Lumen is running on port ' + lumen.config.get('default', 'port')],
+                tags.div()['Lumen is running on port ' + config.getConfig().get('default', 'port')],
                 tags.div()[
                     tags.a(href='http://github.com/unsouled/lumen')['Github']
                 ]
@@ -143,15 +145,15 @@ class DashboardPage(WebConsoleLayout):
             tags.table()[
                 tags.tr()[
                     tags.th()['Endpoint'],
-                    tags.td()['/' + lumen.config.get('default', 'endpoint')],
+                    tags.td()['/' + config.getConfig().get('default', 'endpoint')],
                 ],
                 tags.tr()[
                     tags.th()['Port'],
-                    tags.td()[lumen.config.get('default', 'port')],
+                    tags.td()[config.getConfig().get('default', 'port')],
                 ],
                 tags.tr()[
                     tags.th()['Engine'],
-                    tags.td()[lumen.config.get('default', 'engine')],
+                    tags.td()[config.getConfig().get('default', 'engine')],
                 ]
             ],
         ]
@@ -162,11 +164,11 @@ class DashboardPage(WebConsoleLayout):
             tags.table()[
                 tags.tr()[
                     tags.th()['Endpoint'],
-                    tags.td()['/' + lumen.config.get('webconsole', 'endpoint')],
+                    tags.td()['/' + config.getConfig().get('webconsole', 'endpoint')],
                 ],
                 tags.tr()[
                     tags.th()['Comet Enabled'],
-                    tags.td()[lumen.config.get('webconsole', 'cometEnabled')],
+                    tags.td()[config.getConfig().get('webconsole', 'cometEnabled')],
                 ],
 
             ],

@@ -4,8 +4,8 @@ from twisted.internet import reactor
 import bayeux
 import config
 
-config = config.ConfigFactory.create('ini')
-port = int(config.get('default', 'port'))
+conf = config.getConfig()
+port = int(conf.get('default', 'port'))
 
 def main():
     lumen = server.Site(bayeux.Bayeux())

@@ -1,33 +1,30 @@
 import ConfigParser
 import os
+from pkg_resources import resource_filename
+from optparse import OptionParser
 
-class Config:
-    pass
-
-class IniConfig(Config):
-    filename = 'lumen.ini'
+class Config():
     parser = ConfigParser.ConfigParser()
 
-    def __init__(self):
-        appRoot = os.path.abspath(os.path.dirname(__file__) + '/../..')
-        configFile = appRoot + '/config/' + self.filename
-        print configFile
-        self.parser.read(configFile)
-        self.set('default', 'APP_ROOT', appRoot)
+    def __init__(self, configFile):
+        if configFile:
+            self.configFile = configFile
+        else:
+            self.configFile = resource_filename(__name__, 'res/lumen.conf')
+        self.parser.read(self.configFile)
 
     def get(self, section, key):
         return self.parser.get(section, key)
 
-    def set(self, section, key, value):
-        self.parser.set(section, key, value)
-
-class XmlConfig(Config):
-    filename = 'lumen.xml'
-
-class YmlConfig(Config):
-    filename = 'lumen.yml'
-
-class ConfigFactory():
-    @staticmethod
-    def create(name):
-        return IniConfig()
+_config = None
+def getConfig():
+    global _config
+    if _config is None:
+        optparser = OptionParser()
+        optparser.add_option('-c', '--config', dest='conf',
+                             help='lumen configuration file path', 
+                             metavar='<CONF FILE>')
+        (options, args) = optparser.parse_args()
+        _config = Config(options.conf)
+    return _config
+        

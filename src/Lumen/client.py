@@ -1,5 +1,4 @@
 from twisted.internet import reactor
-from json import JSONEncoder
 import uuid
 import channel
 from datetime import datetime

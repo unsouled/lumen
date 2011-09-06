@@ -1,5 +1,5 @@
 from twisted.internet import reactor, defer
-from json import JSONDecoder, JSONEncoder
+import json
 import channel
 import client
 from transport import TransportFactory
@@ -17,7 +17,7 @@ class Message():
     def __init__(self, httpRequest):
         self.transport = TransportFactory.create(httpRequest)
         self.httpRequest = httpRequest
-        self.content = JSONDecoder().decode(self.transport.read())
+        self.content = json.loads(self.transport.read())
         self.requests = [Request(data) for data in self.content]
 
     def process(self):
