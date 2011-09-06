@@ -1,7 +1,8 @@
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 from json import JSONDecoder, JSONEncoder
 import channel
 import client
+from transport import TransportFactory
 
 class Request():
     def __init__(self, attributes):
@@ -13,7 +14,7 @@ class Request():
         if not self.attributes['channel'].startswith('/meta/'):
             reactor.callLater(0.01, self._doPublish)
 
-        return channel.get(self.attributes['channel']).process(self)
+        return channel.get(self.attributes['channel']).publish(self)
 
     def _doPublish(self):
         data = [{ 'channel': self.attributes['channel'],
@@ -27,44 +28,21 @@ class Request():
         for subscriber in subscribers:
             subscriber.publish(data)
 
-class ClientMessage():
-    def __init__(self, httpRequest, content):
+class Message():
+    def __init__(self, httpRequest):
+        self.transport = TransportFactory.create(httpRequest)
         self.httpRequest = httpRequest
-        self.content = JSONDecoder().decode(content)
+        self.content = JSONDecoder().decode(self.transport.read())
         self.requests = [Request(data) for data in self.content]
 
-    def handle(self, c):
-        responses = []
-        while self.requests:
-            request = self.requests.pop(0)
-            response = request.process()
-            response['clientId'] = c.id
-            responses.append (response)
-
+    def process(self):
+        responses = defer.DeferredList([request.process() for request in self.requests])
+        responses.addCallback(self.response)
         return responses
 
-class LongPollingMessage(ClientMessage):
-    def response(self, data):
-        self.httpRequest.write(JSONEncoder().encode(data))
-        self.httpRequest.finish()
-
-class CallbackPollingMessage(ClientMessage):
-    def __init__(self, httpRequest, content, callback):
-        ClientMessage.__init__(self, httpRequest, content)
-        self.callback = callback
-
-    def response(self, data):
-        data = '%s(%s)' % (self.callback, JSONEncoder().encode(data))
-        self.httpRequest.write(data)
-        self.httpRequest.finish()
-
-class MessageFactory():
-    @staticmethod
-    def create(httpRequest):
-        if httpRequest.method == 'POST':
-            content = httpRequest.content.read()
-            return LongPollingMessage(httpRequest, content)
-        elif httpRequest.method == 'GET':
-            content = httpRequest.args['message'][0]
-            callback = httpRequest.args['jsonp'][0]
-            return CallbackPollingMessage(httpRequest, content, callback)
+    def response(self, responses):
+        data = []
+        for response in responses:
+            status, r = response
+            data += r
+        self.transport.write(data)

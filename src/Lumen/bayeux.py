@@ -1,7 +1,9 @@
-from twisted.web import resource
+from twisted.web import resource, static
 import twisted.web.server
-from message import MessageFactory
 import dispatcher
+import webconsole
+import lumen
+from message import Message
 
 class Bayeux(resource.Resource):
     class Server(resource.Resource):
@@ -10,17 +12,18 @@ class Bayeux(resource.Resource):
 
         def render(self, httpRequest):
             print 'http request received'
-            print httpRequest
             httpRequest.setHeader('content-type', 'text/json')
 
-            msg = MessageFactory.create(httpRequest)
-            dispatcher.dispatch(msg)
+            msg = Message(httpRequest)
+            msg.process()
 
             return twisted.web.server.NOT_DONE_YET
 
     def __init__(self):
         resource.Resource.__init__ (self)
-        self.putChild('lumen', Bayeux.Server())
+        self.putChild(lumen.config.get('default', 'endpoint'), Bayeux.Server())
+        self.putChild(lumen.config.get('webconsole', 'endpoint'), webconsole.WebConsole())
+        self.putChild('public', static.File(lumen.config.get('default', 'APP_ROOT') + '/' + 'public'))
 
     def render_GET(self, request):
         pass

@@ -8,6 +8,6 @@ Faye.logger = lambda { |m| puts m }
 EM.run do
   client = Faye::Client.new("http://localhost:8080/lumen")
 
-  client.publish('/test', { :message => 'ya ho!'})
+  client.publish('/test', { :body => 'ya ho!'})
 end
 
