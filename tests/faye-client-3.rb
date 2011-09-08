@@ -7,7 +7,7 @@ Faye::Logging.log_level = :debug
 Faye.logger = lambda { |m| puts m }
 
 EM.run do
-  client = Faye::Client.new("http://localhost:8080/lumen")
+  client = Faye::Client.new("http://localhost:1234/lumen")
   client.subscribe('/test') do |message|
     puts message
   end

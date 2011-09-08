@@ -65,6 +65,7 @@ class Connect(Meta):
         d = defer.Deferred()
         c = client.clients[msg.attributes['clientId']]
         c.connection = (d, msg)
+        c.response()
 
         return d
 

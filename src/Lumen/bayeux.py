@@ -25,4 +25,3 @@ class Bayeux(resource.Resource):
 
     def render_GET(self, request):
         pass
-

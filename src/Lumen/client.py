@@ -13,18 +13,26 @@ class Client():
         self.channelsSubscribing = set()
         self.typename = 'comet'
         self.createdAt = datetime.now()
+        self.messages = []
 
     def publish(self, msg):
-        d = self.connection[0]
-        cmsg = self.connection[1]
-        data = [{'id': cmsg.attributes['id'],
-                 'channel': cmsg.attributes['channel'],
-                 'successful': True,
-                 'error': '',
-                 'timestamp': '12:00:00 1970',
-                 'data': msg.attributes['data'],
-                 'advice': { 'reconnect': 'retry' } }, msg.attributes]
-        d.callback(data)
+        self.messages.append(msg)
+        self.response()
+
+    def response(self):
+        if self.connection and self.messages:
+            d = self.connection[0]
+            cmsg = self.connection[1]
+            data = [{'id': cmsg.attributes['id'],
+                     'channel': cmsg.attributes['channel'],
+                     'successful': True,
+                     'error': '',
+                     'timestamp': '12:00:00 1970',
+                     'advice': { 'reconnect': 'retry' } }]
+            while self.messages:
+                data.append(self.messages.pop(0).attributes)
+            d.callback(data)
+            self.connection = None
 
     def subscribe(self, ch):
         channel.get(ch).subscribe(self)
@@ -40,6 +48,7 @@ class Client():
 class IOSClient(Client):
     def __init__(self, clientId, deviceToken):
         Client.__init__(self, clientId)
+        self.typename = 'apns'
         self.deviceToken = deviceToken
 
     def _doHandleMessage(self, msg):
