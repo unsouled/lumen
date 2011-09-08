@@ -8,14 +8,15 @@
     <script type="text/javascript" src="jquery.mobile-1.0b2.min.js"></script>
     <script type="text/javascript" src="faye-browser-min.js"></script>
     <script type="text/javascript">
-      var client = new Faye.Client('/lumen');
+      var client = new Faye.Client('http://localhost:1234/lumen');
 
       $(document).ready(function() {
           var name = prompt("Please input your name");
           var subscription = client.subscribe('/test', function(message) {
             var messages = $('#messages');
             messages.prepend($("<li></li>").html(
-                "<h2>" + message.from + "</h2>" +
+                "<h2>[" + message.channel + "]" +
+                message.from + "</h2>" +
                 "<p>" + message.body + "</p>")
             );
             messages.listview('refresh');
@@ -24,7 +25,7 @@
           $('#messageForm').submit(function() {
             var messageBody = $('#message').val();
             $('#message').val('');
-            client.publish('/test', { from: name,  body: messageBody });
+            client.publish('/test', { channel: '/test', from: name, body: messageBody });
             return false;
           });
      });

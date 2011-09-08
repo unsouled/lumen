@@ -10,7 +10,6 @@ class Bayeux(resource.Resource):
             resource.Resource.__init__(self)
 
         def render(self, httpRequest):
-            print 'http request received'
             httpRequest.setHeader('content-type', 'text/json')
 
             msg = Message(httpRequest)

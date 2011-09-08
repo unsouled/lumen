@@ -21,7 +21,7 @@ class Channel():
 
         subscribers = self.getAllPatternSubscribers()
         for subscriber in subscribers:
-            subscriber.publish(msg)
+            subscriber.publish(self.id, msg)
 
         return d
 

@@ -15,8 +15,8 @@ class Client():
         self.createdAt = datetime.now()
         self.messages = []
 
-    def publish(self, msg):
-        self.messages.append(msg)
+    def publish(self, channelId, msg):
+        self.messages.append((channelId,msg))
         self.response()
 
     def response(self):
@@ -30,7 +30,9 @@ class Client():
                      'timestamp': '12:00:00 1970',
                      'advice': { 'reconnect': 'retry' } }]
             while self.messages:
-                data.append(self.messages.pop(0).attributes)
+                channelId, msg = self.messages.pop(0)
+                msg.attributes['channel'] = channelId
+                data.append(msg.attributes)
             d.callback(data)
             self.connection = None
 
@@ -57,7 +59,7 @@ class IOSClient(Client):
 
         reactor.callLater(0.01, self.__connectToAPNSServer)
 
-    def publish(self, msg):
+    def publish(self, channelId, msg):
 #        apns.push(self.deviceToken, msg.attributes, cert, priv)
         pass
 
