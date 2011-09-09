@@ -25,7 +25,7 @@
           $('#messageForm').submit(function() {
             var messageBody = $('#message').val();
             $('#message').val('');
-            client.publish('/test', { channel: '/test', from: name, body: messageBody });
+            client.publish('/test', { from: name, body: messageBody });
             return false;
           });
      });

@@ -31,7 +31,7 @@ class Client():
                      'advice': { 'reconnect': 'retry' } }]
             while self.messages:
                 channelId, msg = self.messages.pop(0)
-                msg.attributes['channel'] = channelId
+                msg.attributes['data']['channel'] = channelId
                 data.append(msg.attributes)
             d.callback(data)
             self.connection = None
