@@ -48,10 +48,12 @@ class Client():
             channel.get(ch).unsubscribe(self)
 
 class IOSClient(Client):
-    def __init__(self, clientId, deviceToken):
+    def __init__(self, clientId, deviceToken, cert, priv):
         Client.__init__(self, clientId)
         self.typename = 'apns'
         self.deviceToken = deviceToken
+        self.cert = cert
+        self.priv = priv
 
     def _doHandleMessage(self, msg):
         responses = msg.handle(self)
@@ -59,9 +61,8 @@ class IOSClient(Client):
 
         reactor.callLater(0.01, self.__connectToAPNSServer)
 
-    def publish(self, channelId, msg):
-#        apns.push(self.deviceToken, msg.attributes, cert, priv)
-        pass
+    def publish(self, msg):
+        apns.push(self.deviceToken, msg.attributes, self.cert, self.priv)
 
 def generateClientId():
     return uuid.uuid4().urn[9:]
@@ -80,7 +81,8 @@ class ClientFactory():
         # FIXME
         #if 'apns' in handshake.attributes['supportedConnectionTypes']:
         #    deviceToken = handshake.attributes['deviceToken']
-        #    c = IOSClient(clientId, deviceToken)
+        #    app = apps.find(handshake.attributes['appId'])
+        #    c = IOSClient(clientId, deviceToken, app.cert, app.priv)
         #else:
         c = Client(clientId)
         clients[clientId] = c

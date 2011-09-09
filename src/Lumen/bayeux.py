@@ -1,4 +1,4 @@
-from twisted.web import resource
+from twisted.web import resource, static
 import twisted.web.server
 import webconsole
 import config
@@ -21,6 +21,7 @@ class Bayeux(resource.Resource):
         resource.Resource.__init__ (self)
         self.putChild(config.getConfig().get('default', 'endpoint'), Bayeux.Server())
         self.putChild(config.getConfig().get('webconsole', 'endpoint'), webconsole.WebConsole())
+        self.putChild('public', static.File('res/public'))
 
     def render_GET(self, request):
         pass
