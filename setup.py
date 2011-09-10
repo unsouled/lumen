@@ -8,7 +8,12 @@ setup(
     package_dir = {'': 'src'},
     include_package_data = True,
     package_data = {
-        'Lumen': ['res/*'],
+        'Lumen': ['res/*.xml',
+          'res/*.conf',
+          'res/public/example/*',
+          'res/public/js/*',
+          'res/public/css/*'
+          ],
     },
 
     entry_points = {

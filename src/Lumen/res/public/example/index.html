@@ -8,7 +8,7 @@
     <script type="text/javascript" src="jquery.mobile-1.0b2.min.js"></script>
     <script type="text/javascript" src="faye-browser-min.js"></script>
     <script type="text/javascript">
-      var client = new Faye.Client('http://localhost:1234/lumen');
+      var client = new Faye.Client('/lumen');
 
       $(document).ready(function() {
           var name = prompt("Please input your name");
