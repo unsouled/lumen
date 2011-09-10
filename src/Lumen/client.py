@@ -6,6 +6,7 @@ import apns
 import config
 import glob
 import os
+import hashlib
 
 clients = {}
 
@@ -51,10 +52,11 @@ class Client():
             channel.get(ch).unsubscribe(self)
 
 class IOSClient(Client):
-    def __init__(self, clientId, deviceToken):
+    def __init__(self, clientId, deviceToken, appId):
         Client.__init__(self, clientId)
         self.typename = 'apns'
         self.deviceToken = deviceToken
+        self.appId = appId
 
     def _doHandleMessage(self, msg):
         responses = msg.handle(self)
@@ -75,23 +77,16 @@ class IOSClient(Client):
             d.callback(data)
 
     def publish(self, channelId, msg):
+        msg.attributes['data']['channel'] = channelId
         cert, priv = self.__findCertificationFiles(channelId)
-        if cert is None or priv is None:
-            return
         apns.push(self.deviceToken, msg.attributes, cert, priv)
 
     def __findCertificationFiles(self, channelId):
         certdir = config.getConfig().get('default', 'certdir')
-        certfiles = glob.glob('%s/*' % certdir)
-        segments = channelId.split('/')[1:]
-        while segments:
-            cert = '%s/%s.cert.pem' % (certdir, '.'.join(segments))
-            priv = '%s/%s.priv.pem' % (certdir, '.'.join(segments))
-            if cert in certfiles and priv in certfiles:
-                return cert, priv
-            segments.pop()
-
-        return None, None
+        appdir = hashlib.md5(self.appId).hexdigest()
+        cert = '%s/%s/cert.pem' % (certdir, appdir)
+        priv = '%s/%s/priv.pem' % (certdir, appdir)
+        return cert, priv
 
 def generateClientId():
     return uuid.uuid4().urn[9:]
@@ -108,7 +103,8 @@ class ClientFactory():
         clientId = generateClientId()
         if 'apns' in msg.attributes['supportedConnectionTypes']:
            deviceToken = msg.attributes['deviceToken']
-           c = IOSClient(clientId, deviceToken)
+           appId = msg.attributes['applicationId']
+           c = IOSClient(clientId, deviceToken, appId)
         else:
             c = Client(clientId)
         clients[clientId] = c
