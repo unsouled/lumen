@@ -3,6 +3,9 @@ import uuid
 import channel
 from datetime import datetime
 import apns
+import config
+import glob
+import os
 
 clients = {}
 
@@ -16,7 +19,7 @@ class Client():
         self.messages = []
 
     def publish(self, channelId, msg):
-        self.messages.append((channelId,msg))
+        self.messages.append((channelId, msg))
         self.response()
 
     def response(self):
@@ -59,9 +62,36 @@ class IOSClient(Client):
 
         reactor.callLater(0.01, self.__connectToAPNSServer)
 
+    def response(self):
+        if self.connection:
+            d = self.connection[0]
+            cmsg = self.connection[1]
+            data = [{'id': cmsg.attributes['id'],
+                     'channel': cmsg.attributes['channel'],
+                     'successful': True,
+                     'error': '',
+                     'timestamp': '12:00:00 1970',
+                     'advice': { 'reconnect': 'retry' } }]
+            d.callback(data)
+
     def publish(self, channelId, msg):
-#        apns.push(self.deviceToken, msg.attributes, cert, priv)
-        pass
+        cert, priv = self.__findCertificationFiles(channelId)
+        if cert is None or priv is None:
+            return
+        apns.push(self.deviceToken, msg.attributes, cert, priv)
+
+    def __findCertificationFiles(self, channelId):
+        certdir = config.getConfig().get('default', 'certdir')
+        certfiles = glob.glob('%s/*' % certdir)
+        segments = channelId.split('/')[1:]
+        while segments:
+            cert = '%s/%s.cert.pem' % (certdir, '.'.join(segments))
+            priv = '%s/%s.priv.pem' % (certdir, '.'.join(segments))
+            if cert in certfiles and priv in certfiles:
+                return cert, priv
+            segments.pop()
+
+        return None, None
 
 def generateClientId():
     return uuid.uuid4().urn[9:]
@@ -75,13 +105,11 @@ def remove(clientId):
 class ClientFactory():
     @staticmethod
     def create(msg):
-        #handshake = msg.requests[0]
         clientId = generateClientId()
-        # FIXME
-        #if 'apns' in handshake.attributes['supportedConnectionTypes']:
-        #    deviceToken = handshake.attributes['deviceToken']
-        #    c = IOSClient(clientId, deviceToken)
-        #else:
-        c = Client(clientId)
+        if 'apns' in msg.attributes['supportedConnectionTypes']:
+           deviceToken = msg.attributes['deviceToken']
+           c = IOSClient(clientId, deviceToken)
+        else:
+            c = Client(clientId)
         clients[clientId] = c
         return c

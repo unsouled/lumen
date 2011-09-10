@@ -19,7 +19,6 @@ class APNSClientContextFactory(ClientContextFactory):
 
 class APNSClientFactory(ClientFactory):
     def __init__(self, deviceToken, payload):
-        ClientFactory.__init__(self)
         self.deviceToken = deviceToken
         self.payload = payload
 
@@ -35,9 +34,8 @@ class APNSClientFactory(ClientFactory):
 
 class APNSProtocol(Protocol):
     def __init__(self, deviceToken, payload):
-        Protocol.__init__(self)
         self.deviceToken = deviceToken
-        self.paylaod = payload
+        self.payload = payload
 
     def connectionMade(self):
         self.sendMessage(self.deviceToken.decode('hex'), self.payload)
