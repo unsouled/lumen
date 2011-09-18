@@ -3,10 +3,10 @@ import uuid
 import channel
 from datetime import datetime
 import apns
-import config
 import glob
 import os
 import hashlib
+import lumen
 
 clients = {}
 
@@ -31,7 +31,7 @@ class Client():
                      'channel': cmsg.attributes['channel'],
                      'successful': True,
                      'error': '',
-                     'timestamp': '12:00:00 1970',
+                     'timestamp': datetime.now().strftime('%H:%M%S %Y'),
                      'advice': { 'reconnect': 'retry' } }]
             while self.messages:
                 channelId, msg = self.messages.pop(0)
@@ -72,20 +72,22 @@ class IOSClient(Client):
                      'channel': cmsg.attributes['channel'],
                      'successful': True,
                      'error': '',
-                     'timestamp': '12:00:00 1970',
+                     'timestamp': datetime.now().strftime('%H:%M%S %Y'),
                      'advice': { 'reconnect': 'retry' } }]
             d.callback(data)
 
     def publish(self, channelId, msg):
         msg.attributes['data']['channel'] = channelId
         cert, priv = self.__findCertificationFiles(channelId)
-        apns.push(self.deviceToken, msg.attributes, cert, priv)
+        apns.push(self.deviceToken, msg.attributes['data'], cert, priv)
 
     def __findCertificationFiles(self, channelId):
-        certdir = config.getConfig().get('default', 'certdir')
-        appdir = hashlib.md5(self.appId).hexdigest()
-        cert = '%s/%s/cert.pem' % (certdir, appdir)
-        priv = '%s/%s/priv.pem' % (certdir, appdir)
+        appdir = os.path.join(os.path.abspath(lumen.config['certpath']), self.appId)
+        print appdir
+        cert = os.path.join(appdir, 'cert.pem')
+        priv = os.path.join(appdir, 'priv.pem')
+        print cert
+        print priv
         return cert, priv
 
 def generateClientId():

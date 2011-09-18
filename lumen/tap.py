@@ -12,12 +12,13 @@ DEFAULT_WEBCONSOLE_PORT = 8000
 
 class Options(usage.Options):
     optParameters = [
-        ['file', 'f', '/etc/lumen'],
-        ['templates', 't', '/usr/share/lumen/templates'],
+        ['docroot', 't', './public'],
+        ['templates', 't', './templates'],
         ['engine', 'e', 'memory'],
-        ['logpath', 'lp', None],
+        ['certpath', 'c', './cert'],
+        ['logpath', 'l', './twistd.log'],
         ['port', 'p', DEFAULT_BAYEUX_PORT],
-        ['cport', 'cp', DEFAULT_WEBCONSOLE_PORT],
+        ['webport', 'w', DEFAULT_WEBCONSOLE_PORT],
     ]
 
 def makeService(options):

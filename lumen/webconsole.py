@@ -2,14 +2,12 @@ import client
 import channel
 import lumen
 import os
-#import config
 
 from nevow import loaders, rend, tags
 from twisted.web import resource, static
-from pkg_resources import resource_filename
 
 class WebConsoleLayout(rend.Page):
-    docFactory = loaders.xmlfile(resource_filename(__name__, 'res/index.xml'))
+    docFactory = loaders.xmlfile(os.path.abspath(os.path.join(lumen.config['templates'], 'index.xml')))
     endpoint = ''
     menus = [{ 'id' : 'dashboard',
                'label': 'Overview',
@@ -175,7 +173,7 @@ class DashboardPage(WebConsoleLayout):
             tags.table()[
                 tags.tr()[
                     tags.th()['Port'],
-                    tags.td()[lumen.config['cport']],
+                    tags.td()[lumen.config['webport']],
                 ],
 
             ],
@@ -183,7 +181,7 @@ class DashboardPage(WebConsoleLayout):
 
     def render_logs(self):
         if lumen.config['logpath']:
-            logFilePath = os.path.abspath(os.path.join(lumen.config['logpath'], 'lumen.log'))
+            logFilePath = os.path.abspath(lumen.config['logpath'])
             logFile = open(logFilePath)
             return [
                   tags.h3()['Logs'],
@@ -220,7 +218,7 @@ class WebConsole(resource.Resource):
         self.putChild('clients', self.Clients())
         self.putChild('channels', self.Channels())
         self.putChild('transports', self.Transports())
-        self.putChild('public', static.File('/home/unsouled/lumen/lumen/res/public'))
+        self.putChild('public', static.File(os.path.abspath(lumen.config['docroot'])))
 
     def render_GET(self, httpRequest):
         return DashboardPage().renderSynchronously()

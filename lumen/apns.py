@@ -5,7 +5,8 @@ from twisted.internet import reactor
 from twisted.internet.protocol import ClientFactory, Protocol
 from twisted.internet.ssl import ClientContextFactory
 
-APNS_SERVER_HOSTNAME = 'gateway.push.apple.com'
+APNS_SERVER_PRODUCTION_HOSTNAME = 'gateway.push.apple.com'
+APNS_SERVER_DEVELOPMENT_HOSTNAME = 'gateway.sandbox.push.apple.com'
 APNS_SERVER_PORT = 2195
 
 class APNSClientContextFactory(ClientContextFactory):
@@ -46,9 +47,15 @@ class APNSProtocol(Protocol):
         msg = struct.pack(fmt, command, len(deviceToken), deviceToken, len(payload), payload)
         self.transport.write(msg)
 
-def push(deviceToken, payload, certFile, privFile):
+def push(deviceToken, payload, certFile, privFile, environment='development'):
     payload = json.dumps({'aps': {'alert': payload}})
-    reactor.connectSSL(APNS_SERVER_HOSTNAME,
+
+    if environment == 'production':
+        apnsHost = APNS_SERVER_PRODUCTION_HOSTNAME
+    else:
+        apnsHost = APNS_SERVER_DEVELOPMENT_HOSTNAME
+
+    reactor.connectSSL(apnsHost,
             APNS_SERVER_PORT,
             APNSClientFactory(deviceToken, payload),
             APNSClientContextFactory(certFile, privFile))
