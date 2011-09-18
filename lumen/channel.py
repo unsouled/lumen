@@ -1,3 +1,4 @@
+import uuid
 from twisted.internet import reactor, defer
 import client
 
@@ -42,6 +43,9 @@ class Service(Channel):
 class Handshake(Meta):
     def __init__(self):
         Meta.__init__(self, '/meta/handshake')
+
+    def generateClientId(self):
+      return uuid.uuid4().urn[9:]
 
     def publish(self, msg):
         d = defer.Deferred()

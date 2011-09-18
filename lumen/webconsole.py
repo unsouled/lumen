@@ -1,27 +1,25 @@
 import client
 import channel
-import config
+import lumen
+import os
+#import config
 
 from nevow import loaders, rend, tags
-from twisted.web import resource
-
+from twisted.web import resource, static
 from pkg_resources import resource_filename
 
 class WebConsoleLayout(rend.Page):
     docFactory = loaders.xmlfile(resource_filename(__name__, 'res/index.xml'))
-    endpoint = '/' + config.getConfig().get('webconsole', 'endpoint')
+    endpoint = ''
     menus = [{ 'id' : 'dashboard',
                'label': 'Overview',
                'url': endpoint + '/dashboard' },
              { 'id' : 'clients',
-               'label': 'Clients',
+               'label': 'Connections',
                'url': endpoint + '/clients' },
              { 'id': 'channels',
                'label': 'Channels',
                'url': endpoint + '/channels' },
-             { 'id': 'subscriptions',
-               'label': 'Subscriptions',
-               'url': endpoint + '/subscriptions' },
              { 'id': 'transports',
                'label': 'Transports',
                'url': endpoint + '/transports' }]
@@ -48,7 +46,7 @@ class WebConsoleLayout(rend.Page):
 
     def render_footer(self, context, data):
         return  tags.p() [
-                tags.div()['Lumen is running on port ' + config.getConfig().get('default', 'port')],
+                tags.div()['Lumen is running on port %s' % lumen.config['port']],
                 tags.div()[
                     tags.a(href='http://github.com/unsouled/lumen')['Github']
                 ]
@@ -112,16 +110,6 @@ class ChannelsPage(WebConsoleLayout):
     def render_content(self, context, data):
         return [self.render_channels_list()]
 
-class SubscriptionsPage(WebConsoleLayout):
-    def __init__(self):
-        WebConsoleLayout.__init__(self, 'subscriptions')
-
-    def render_title(self, context, data):
-        return tags.h2()['Subscriptions']
-
-    def render_content(self, context, data):
-        return "This is Subscriptions Page"
-
 class TransportsPage(WebConsoleLayout):
     def __init__(self):
         WebConsoleLayout.__init__(self, 'transports')
@@ -130,11 +118,38 @@ class TransportsPage(WebConsoleLayout):
         return tags.h2()['Transports']
 
     def render_content(self, context, data):
-        return "This is Transports Page"
+        return [
+            tags.h3()['APNS'],
+            tags.h4()['Applications'],
+        ]
 
 class DashboardPage(WebConsoleLayout):
     def __init__(self):
         WebConsoleLayout.__init__(self, 'dashboard')
+
+    def tail_logs(self, f, window=30):
+        BUFSIZ = 1024
+        f.seek(0, 2)
+        bytes = f.tell()
+        size = window
+        block = -1
+        data = []
+        while size > 0 and bytes > 0:
+            if (bytes - BUFSIZ > 0):
+                # Seek back one whole BUFSIZ
+                f.seek(block*BUFSIZ, 2)
+                # read BUFFER
+                data.append(f.read(BUFSIZ))
+            else:
+                # file too small, start from begining
+                f.seek(0,0)
+                # only read what was not read
+                data.append(f.read(bytes))
+            linesFound = data[-1].count('\n')
+            size -= linesFound
+            bytes -= BUFSIZ
+            block -= 1
+        return '\n'.join(''.join(data).splitlines()[-window:])
 
     def render_title(self, context, data):
         return tags.h2()['Overview']
@@ -144,16 +159,12 @@ class DashboardPage(WebConsoleLayout):
             tags.h3()['Bayeux Environmerts'],
             tags.table()[
                 tags.tr()[
-                    tags.th()['Endpoint'],
-                    tags.td()['/' + config.getConfig().get('default', 'endpoint')],
-                ],
-                tags.tr()[
                     tags.th()['Port'],
-                    tags.td()[config.getConfig().get('default', 'port')],
+                    tags.td()[lumen.config['port']],
                 ],
                 tags.tr()[
                     tags.th()['Engine'],
-                    tags.td()[config.getConfig().get('default', 'engine')],
+                    tags.td()[lumen.config['engine']],
                 ]
             ],
         ]
@@ -163,31 +174,37 @@ class DashboardPage(WebConsoleLayout):
             tags.h3()['Web console Environments'],
             tags.table()[
                 tags.tr()[
-                    tags.th()['Endpoint'],
-                    tags.td()['/' + config.getConfig().get('webconsole', 'endpoint')],
-                ],
-                tags.tr()[
-                    tags.th()['Comet Enabled'],
-                    tags.td()[config.getConfig().get('webconsole', 'cometEnabled')],
+                    tags.th()['Port'],
+                    tags.td()[lumen.config['cport']],
                 ],
 
             ],
         ]
 
+    def render_logs(self):
+        if lumen.config['logpath']:
+            logFilePath = os.path.abspath(os.path.join(lumen.config['logpath'], 'lumen.log'))
+            logFile = open(logFilePath)
+            return [
+                  tags.h3()['Logs'],
+                  tags.pre(style='border:1px solid #ccc; padding: 0.5em; overflow:auto')[
+                      self.tail_logs(logFile)
+                  ],
+            ]
+        else:
+            return []
+
     def render_content(self, context, data):
         return [
             self.render_bayeux_environments(),
             self.render_webconsole_environments(),
+            self.render_logs(),
         ]
 
 class WebConsole(resource.Resource):
     class Clients(resource.Resource):
         def render(self, httpRequest):
             return ClientsPage().renderSynchronously()
-
-    class Subscriptions(resource.Resource):
-        def render(self, httpRequest):
-            return SubscriptionsPage().renderSynchronously()
 
     class Channels(resource.Resource):
         def render(self, httpRequest):
@@ -202,9 +219,9 @@ class WebConsole(resource.Resource):
         self.putChild('dashboard', self)
         self.putChild('clients', self.Clients())
         self.putChild('channels', self.Channels())
-        self.putChild('subscriptions', self.Subscriptions())
         self.putChild('transports', self.Transports())
+        self.putChild('public', static.File('/home/unsouled/lumen/lumen/res/public'))
 
-    def render(self, httpRequest):
+    def render_GET(self, httpRequest):
         return DashboardPage().renderSynchronously()
 
