@@ -77,6 +77,7 @@ class ClientFactory():
     @staticmethod
     def create(msg):
         #handshake = msg.requests[0]
+        #clientId = msg.attributes['clientId']
         clientId = generateClientId()
         # FIXME
         #if 'apns' in handshake.attributes['supportedConnectionTypes']:
